@@ -1,0 +1,23 @@
+DIR=./
+
+
+GCC=g++
+INC=-I ${DIR}/ -I ${DIR}/../MDE -I ${DIR}/../IDE -I ${DIR}/../FUNC
+
+MDE=${DIR}/../mde
+TEST_MDE_O=${DIR}/../Obj/TEST_MDE.o
+MDE_O=${DIR}/../Obj/MDE.o
+MDE_SRC=${DIR}/MDE.cpp
+TEST_MDE_SRC=${DIR}/test_mde.cpp
+
+${MDE}:${TEST_MDE_O} ${MDE_O}
+	${GCC} -o ${MDE} ${TEST_MDE_O} ${MDE_O} ${INC} -g
+	
+${TEST_MDE_O}:${TEST_MDE_SRC}
+	${GCC} -c ${TEST_MDE_SRC} -g ${INC} -o ${TEST_MDE_O}
+
+${MDE_O}:${MDE_SRC}
+	${GCC} -c ${MDE_SRC} -g ${INC} -o ${MDE_O}
+
+clean:
+	rm -rf ${DIR}/../Obj/MDE.o ${DIR}/../Obj/TEST_MDE.o *.o
