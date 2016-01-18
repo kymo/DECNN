@@ -2,16 +2,19 @@ DIR=./
 
 
 GCC=g++
-INC=-I ${DIR}/ -I ${DIR}/../MDE -I ${DIR}/../IDE -I ${DIR}/../FUNC
+INC=-I ${DIR}/ -I ${DIR}/../MDE -I ${DIR}/../IDE -I ${DIR}/../FUNC -I ${DIR}/../CNN
 
 MDE=${DIR}/../mde
 TEST_MDE_O=${DIR}/../Obj/TEST_MDE.o
 MDE_O=${DIR}/../Obj/MDE.o
+UTIL_O=${DIR}/../Obj/util.o
+CNN_O=${DIR}/../Obj/cnn.o
+LAYER_O=${DIR}/../Obj/layer.o
 MDE_SRC=${DIR}/MDE.cpp
 TEST_MDE_SRC=${DIR}/test_mde.cpp
 
-${MDE}:${TEST_MDE_O} ${MDE_O}
-	${GCC} -o ${MDE} ${TEST_MDE_O} ${MDE_O} ${INC} -g
+${MDE}:${TEST_MDE_O} ${MDE_O} ${UTIL_O} ${CNN_O} ${LAYER_O}
+	${GCC} -o ${MDE} ${TEST_MDE_O} ${MDE_O} ${UTIL_O} ${CNN_O} ${LAYER_O} ${INC} -g
 	
 ${TEST_MDE_O}:${TEST_MDE_SRC}
 	${GCC} -c ${TEST_MDE_SRC} -g ${INC} -o ${TEST_MDE_O}

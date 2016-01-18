@@ -49,11 +49,47 @@ void DE::_selection( int ind_index ) {
 	double fit_lab_pop = _fitness(_lab_pop->_inds[ind_index]);
 	_cur_pop->_inds[ind_index]._fit_val = fit_cur_pop;
 	_lab_pop->_inds[ind_index]._fit_val = fit_lab_pop;
-	
 	if ( fit_cur_pop > fit_lab_pop ) {
 		for ( int j = 0; j < _dim; j ++) {
 			_cur_pop->_inds[ind_index]._x[j] = _lab_pop->_inds[ind_index]._x[j];
 		}
 	}
+}
+
+double DE::_de(int lock) {
+
+	srand( (unsigned)time( NULL ) );
+	// init population
+	_init_population();
+	// update global optimial values
+	_update_global_opt();
 	
+	
+	
+			
+	_fe = 0;
+	
+	while (_fe < MAX_FE) {
+		
+		// mutation & cross over
+		for ( int j = 0; j < _np; j ++) {
+			_mutation(j);
+			_cross_over(j);	
+		}
+		
+		// selection by greedy strategy
+		for ( int j = 0; j < _np; j ++) {
+			_selection(j);
+		}
+		
+		_update_global_opt();
+		
+		_fe += _np;
+		if ( ! lock ) {
+			cout << _global_opt_val << endl;
+		}
+	}
+		
+	_update_global_opt();
+	return _global_opt_val ;
 }

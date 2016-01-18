@@ -14,6 +14,7 @@ public:
 		IDE( dim, np, func_type, global_opt, opt_val) {}
 	
 	virtual ~DE() ;
+	double _de(int lock);	
 	void _mutation(int ind_index);
 	void _cross_over(int ind_index);
 	void _selection(int ind_index);

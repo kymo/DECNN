@@ -2,14 +2,17 @@
 
 #include "DE.h"
 
-int main () {
+int main (int argc, char* argv[]) {
 	
-	DE *de = new DE(30, 100, ONE, INT_MAX, 0.0);
-	
-	de->_set_f(0.9);
+	/*
+	int t;
+	t = atoi(argv[1]);
+	*/
+	DE *de = new DE(30, 100, 15, INT_MAX, 0.0);
+	de->_set_f(0.5);
 	de->_set_cr(0.5);
-	de->_set_fes(10000000);
-	de->_de();
+	de->_set_fes(100000);
+	de->_de(0);
 	
 	return 0;
 }

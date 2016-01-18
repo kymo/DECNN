@@ -2,19 +2,22 @@ DIR=./
 
 
 GCC=g++
-INC=-I ${DIR}/ -I ${DIR}/../DE -I ${DIR}/../IDE -I ${DIR}/../FUNC
+INC=-I ${DIR}/ -I ${DIR}/../DE -I ${DIR}/../IDE -I ${DIR}/../FUNC -I ${DIR}/../CNN
 
 
 DE=${DIR}/../de
 TEST_DE_O=${DIR}/../Obj/TEST_DE.o
 DE_O=${DIR}/../Obj/DE.o
+UTIL_O=${DIR}/../Obj/util.o
+CNN_O=${DIR}/../Obj/cnn.o
+LAYER_O=${DIR}/../Obj/layer.o
 DE_SRC=${DIR}/DE.cpp
 TEST_DE_SRC=${DIR}/test_de.cpp
 
 
 
-${DE}:${TEST_DE_O} ${DE_O}
-	${GCC} -o ${DE} ${TEST_DE_O} ${DE_O} ${INC} -g
+${DE}:${TEST_DE_O} ${DE_O} ${UTIL_O} ${CNN_O} ${LAYER_O}
+	${GCC} -o ${DE} ${TEST_DE_O} ${DE_O} ${UTIL_O} ${CNN_O} ${LAYER_O} ${INC} -g
 	
 ${TEST_DE_O}:${TEST_DE_SRC}
 	${GCC} -c ${TEST_DE_SRC} -g ${INC} -o ${TEST_DE_O}

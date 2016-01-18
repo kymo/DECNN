@@ -21,14 +21,20 @@ public:
 	int		_x_dim;
 	double 	*_x;
 	double	_fit_val;
+	
 	~Individual() {
+		
+		//cout << "Indivial delete" << endl;
 		if ( _x != NULL ) {
 			free(_x);
 			_x = NULL;
 		}
 	}
 	
-	Individual() {}
+	Individual() {
+		_x = NULL;		
+	}
+	
 	Individual(int x_dim) : _x_dim(x_dim) {
 		_x = (double *) malloc ( sizeof(double) * x_dim);
 		if ( NULL == _x ) {
@@ -37,19 +43,16 @@ public:
 		}
 	}
 	
-    Individual& operator = (const Individual &a) {
-		
-		_x_dim = a._x_dim;
-		_x = (double *) malloc ( sizeof(double) * _x_dim);
+	void init_indi(int x_dim) {
 		if ( NULL == _x ) {
-			cerr << "Error when malloc indivual x values" << endl;
-			exit(0);
-		}
-		for ( int i = 0; i < _x_dim; i ++) {
-			_x[i] = a._x[i];
-		}
-		return *this;
+			_x_dim = x_dim;
+			_x = (double *) malloc ( sizeof(double) * x_dim);
 		
+			if ( NULL == _x ) {
+				cerr << "Error when malloc indivual x values" << endl;
+				exit(0);
+			}
+		}
 	}
 };
 
@@ -68,6 +71,16 @@ public:
 	Population() {}
 	Population( int dim , int np ) : _dim (dim), _np(np) {
 		_inds = new Individual[np];
+		
+		for ( int j = 0; j < _np; j ++) {
+			_inds[j]._x_dim = _dim;
+			_inds[j]._x = ( double * ) malloc ( sizeof(double) * _dim);
+			if ( NULL == _inds[j]._x ) {
+				cerr << "Error when init the populations!" << endl;
+				exit(0);
+			}
+		}
+		
 		if ( _inds == NULL ) {
 			cerr << "Error when init the space for indivuals!" << endl;
 			exit(0);
@@ -129,6 +142,7 @@ public:
 	
 	~IDE() {
 		
+		
 		if ( _cur_pop != NULL ) {
 			delete _cur_pop;
 			_cur_pop = NULL;
@@ -166,9 +180,10 @@ public:
 	
 	// calculate the fitness value	
 	double _fitness(const Individual &ind) {
-		_fe += 1;
+		// _fe += 1;
 		return _func->_fitness(ind._x);		
 	}
+	
 	// update global optimisation values
 	void _update_global_opt() {
 		for ( int i = 0; i < _np; i ++) {		
@@ -179,57 +194,26 @@ public:
 			}
 		}
 	}
+	
 	// init population & parameters
 	void	_init_population() {
 		
 		_global_opt_idx = 0;
-		
+		_global_opt_val = INT_MAX;	
 		for ( int i = 0; i < _np; i ++ ) {
-			Individual init_ind(_dim);
 			for ( int j = 0; j < _dim; j ++) {
-				init_ind._x[j] 	= _func->_x_left_bound[j] + 
-					( rand() / (double) RAND_MAX ) * (_func->_x_right_bound[j] - _func->_x_left_bound[j]);
-				
-			}
 			
-			_cur_pop->_inds[i] 			= init_ind;
-			_cur_pop->_inds[i]._fit_val = _fitness(init_ind);
-			cout << _cur_pop->_inds[i]._fit_val << " " ;	
-			_mu_pop->_inds[i] 			= init_ind;
-			_lab_pop->_inds[i] 			= init_ind;
+				_cur_pop->_inds[i]._x[j] 	= 	_func->_x_left_bound[j] + 
+					( rand() / (double) RAND_MAX ) * (_func->_x_right_bound[j] - _func->_x_left_bound[j]);
+					
+			}
+			_cur_pop->_inds[i]._fit_val = _fitness(_cur_pop->_inds[i]);
 		}
-		cout << endl;
+		
+	//	cout << endl;
 	}
 	// de method
-	void	_de() {
-		srand( (unsigned)time( NULL ) );
-		// init population
-		_init_population();
-		// update global optimial values
-		_update_global_opt();
-		
-		_fe = 0;
-		
-		while (_fe < MAX_FE) {
-			
-			// mutation & cross over
-			for ( int j = 0; j < _np; j ++) {
-				_mutation(j);
-				_cross_over(j);	
-			}
-			
-			// selection by greedy strategy
-			for ( int j = 0; j < _np; j ++) {
-				_selection(j);
-			}
-			
-			_update_global_opt();
-			
-			cout << _global_opt_val << endl;
-		}
-			
-		_update_global_opt();
-	}
+	virtual double	_de(int lock) {	}
 	// virtual methods needed to be override
 	virtual void _mutation(int ind_index) {}
    	virtual void _cross_over(int ind_index) {}
