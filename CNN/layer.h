@@ -241,10 +241,9 @@ public:
 
 class OutputLayer : public Layer {
 public:
-	
-
 	OutputLayer(int i_neuo_cnt,
 		int o_neuo_cnt) {
+		_i_neuo_cnt = i_neuo_cnt;
 		_o_neuo_cnt = o_neuo_cnt;
 		_o = new double[_o_neuo_cnt];
 		if ( NULL == _o ) {
@@ -252,6 +251,7 @@ public:
 			exit(0);
 		}
 		_w = new double*[_i_neuo_cnt];
+		_layer_type	= OUTPUT;
 		if ( NULL == _w ) {
 			cerr << "[ERROR] bad alloc for _w in line:" << __LINE__ << " in file layer.h" << endl;
 			exit(0);

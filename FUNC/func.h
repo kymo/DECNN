@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "cnn.h"
+#include "bpnn.h"
 
 using namespace std;
 
@@ -26,12 +27,12 @@ using namespace std;
 #define FUNC_CEC_ONE_NAME "CEC Shpere"
 
 #define CNN_NAME "CNN"
-
+#define BPNN_NAME "BPNN"
 
 enum func_type {
 	ONE = 1,TWO,THREE,FOUR,
 	FIVE,SIX,SEVEN,EIGHT,
-	NINE,TEN,ELEVEN,TWELVE,THIRTEEN,FOURTEEN,CNN
+	NINE,TEN,ELEVEN,TWELVE,THIRTEEN,FOURTEEN,CNN,BPNNS
 } ;
 
 class IFUNC {
@@ -549,7 +550,7 @@ public:
 			dim,
 			opt_val) {
 		
-		cnn = new ConvNeuralNetwork(100, 100, 100);
+		cnn = new ConvNeuralNetwork(2204, 400, 400);
 		
 		if ( NULL == cnn ) {
 			cerr << "[ERROR] bad alloc for CNN!" << endl;
@@ -561,6 +562,7 @@ public:
 		
 		cnn->_load_train_data();
 		cnn->_load_test_data();
+		
 		cnn->_init_net();
 			
 		for ( int i = 0; i < _dim; i++ ) {
@@ -572,10 +574,59 @@ public:
 	}
 	
 	double _fitness(const double *x) const {
-		cnn->_get_from_dev(x);
+		
+		
+		cnn->_get_from_dev(x);	
+		/*
+			
+		
+		for ( int i = 0; i < cnn->_layers.size(); i ++) {
+			cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+			cout << "layer " << i << ", type: " << cnn->_layers[i]->_layer_type << endl;
+			if ( cnn->_layers[i]->_layer_type == 1 ) {
+				
+				cout << "kernels : " << endl;
+				int pt = 0;
+				for ( int j = 0; j < cnn->_layers[i]->_o_fmap_cnt; j ++) {
+					for ( int k = 0; k < cnn->_layers[i]->_i_fmap_cnt; k ++) {
+						if ( cnn->_layers[i]->_connect_graph[j][k] ) {
+							int idx = j * cnn->_layers[i]->_i_fmap_cnt + k;
+							cout << "kernel:" << pt << endl;
+							pt ++ ;
+							for ( int kr = 0; kr < cnn->_layers[i]->_kernel_r; kr ++) {
+								for ( int kc = 0; kc < cnn->_layers[i]->_kernel_r; kc ++) {
+									cout << cnn->_layers[i]->_kernel[idx][kr][kc] << "\t" ;
+								}
+								cout << endl;
+							}
+						}
+					}
+				}
+				cout << "bias: " << endl;
+				for ( int j = 0; j < cnn->_layers[i]->_o_fmap_cnt; j ++) {
+					cout << cnn->_layers[i]->_bias[j] << "\t";
+				}
+				cout << endl;
+			} else if ( cnn->_layers[i]->_layer_type == 5 ) {
+				cout << "weights : " << endl;
+				for ( int j = 0; j < cnn->_layers[i]->_i_neuo_cnt; j ++) {
+					for ( int k = 0; k < cnn->_layers[i]->_o_neuo_cnt; k ++) {
+						cout << cnn->_layers[i]->_w[j][k] << "\t";
+					}
+					cout << endl;
+				}
+				cout << "bias: " << endl;
+				for ( int j = 0; j < cnn->_layers[i]->_o_neuo_cnt; j ++) {
+					cout << cnn->_layers[i]->_bias[j] << "\t";
+				}
+				cout << endl;
+			}
+		}
+		*/	
 		double ret_val = 0.0;
-		for ( int i = 0; i < cnn->_train_sample_cnt; i ++) {
-			ret_val += cnn->_cost_val_sig(cnn->_x[i], cnn->_y[i]);
+		for ( int i = 0; i < 4; i ++) {
+			int v = rand() % 400;
+			ret_val += cnn->_cost_val_sig(cnn->_x[v], cnn->_y[v]);
 		}
 		return ret_val;
 	}
@@ -586,6 +637,56 @@ public:
 	}
 	
 };
+
+class FUNC_BPNN : public IFUNC {
+private:
+	BPNN *bpnn;
+public:
+	FUNC_BPNN() {}
+	virtual ~FUNC_BPNN() {}
+	FUNC_BPNN(int dim, double opt_val) : IFUNC(BPNN_NAME,
+			dim,
+			opt_val) {
+		
+		bpnn = new BPNN(49, 32, 10, 400, 400);
+
+		cout << "BONN" << endl;
+
+		if ( NULL == bpnn ) {
+			cerr << "[ERROR] bad alloc for BPNN!" << endl;
+			exit (0);
+		}
+		
+		// 对BPNN进行初始化，包括结构初始化，权值不用进行初始化
+		// ，DE里的函数可以自动进行,以及卷积层的连接进行初始化
+		
+		bpnn->_load_train_data();
+		bpnn->_load_test_data();
+			
+		for ( int i = 0; i < _dim; i++ ) {	
+			_x_left_bound[i] = -1;
+			_x_right_bound[i] = 1;
+		}
+	}
+	
+	double _fitness(const double *x) const {
+		bpnn->_get_from_dev(x);	
+		double ret_val = 0.0;
+		for ( int i = 0; i < 40; i ++) {
+			int v = rand() % 400;
+			ret_val += bpnn->_cost_val_sig(bpnn->_x[v], bpnn->_y[v]);
+		}
+		return ret_val;
+	}
+	
+	void _test(const double *x) {
+		bpnn->_get_from_dev(x);
+		bpnn->_test();
+		cout << "hello from bpnn!" << endl;
+	}
+	
+};
+
 
 
 class FuncFactory {
@@ -639,6 +740,9 @@ public:
 				
 			case CNN:
 				return new FUNC_CNN(dim, opt_val);
+			
+			case BPNNS:
+				return new FUNC_BPNN(dim, opt_val);
 				
 			default:
 				break;

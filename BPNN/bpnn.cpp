@@ -48,7 +48,7 @@ double* BPNN::_calculate(double*v) {
 	return o;
 }
 
-double BPNN::_calc_val_sig(double*v, int *y) {
+double BPNN::_cost_val_sig(double*v, int *y) {
 
 	for ( int j = 0; j < _h_neuo_cnt; j ++) {
 		
@@ -263,8 +263,9 @@ void BPNN::_test() {
 				vmax = ry[j];
 				index= j ;
 			}
+			cout << ry[j] << " " << _t_y[i][j] << " ";
 		}
-		
+		cout << index << " " <<  vmax << endl;
 		if ( ry != NULL ) {
 			delete [] ry;
 			ry = NULL;

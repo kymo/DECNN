@@ -43,17 +43,18 @@ void ConvNeuralNetwork::_get_from_dev(const double *a) {
 	
 	int pt = 0;
 	for ( int i = 0; i < _layers.size(); i ++) {
-		
 		if ( _layers[i]->_layer_type == CONV ) {
-			int ofmap_cnt = _layers[i]->_o_fmap_cnt;
+			int ifmap_cnt = _layers[i]->_i_fmap_cnt;
+			
 			for ( int j = 0; j < _layers[i]->_o_fmap_cnt; j ++) {
 				for ( int k = 0; k < _layers[i]->_i_fmap_cnt; k ++) {
+					
 					if ( ! _layers[i]->_connect_graph[j][k] ) {
 						continue;
 					}
 					for ( int kr = 0; kr < _layers[i]->_kernel_r; kr ++) {
 						for ( int kc = 0; kc < _layers[i]->_kernel_c; kc ++) {
-							_layers[i]->_kernel[j * ofmap_cnt + k][kr][kc] = a[pt ++];
+							_layers[i]->_kernel[j * ifmap_cnt + k][kr][kc] = a[pt ++];
 						}
 					}
 				}
@@ -99,10 +100,54 @@ double* ConvNeuralNetwork::_calculate(double *v) {
 
 double ConvNeuralNetwork::_cost_val_sig(double *v, int *y) {
 	
+	
 	_layers[0]->_set_input_fmap(v);
-	for ( int _lc = 1; _lc < _layers.size(); _lc ++) {
-		_layers[_lc]->_forward(_layers[_lc - 1]);
+	/*
+	for ( int i = 0; i < _layers[0]->_o_fmap_r; i ++) {
+		for ( int j = 0; j < _layers[0]->_o_fmap_c; j ++) {
+			cout << _layers[0]->_o_fmap[0]._data[i][j] << " ";
+		}
+		cout << endl;
+	}	
+	int pt = 0;
+	for ( int i = 0; i < _layers[1]->_o_fmap_cnt; i ++) {
+		for ( int j = 0; j < _layers[1]->_i_fmap_cnt; j ++) {
+			if ( _layers[1]->_connect_graph[i][j] ) {
+				int idx = i * _layers[1]->_i_fmap_cnt + j;
+				cout << "Kernel" << pt << endl;
+				pt += 1;
+				for ( int kr = 0; kr < _layers[1]->_kernel_r; kr ++) {
+					for ( int kc = 0; kc < _layers[1]->_kernel_c; kc ++) {
+						cout << _layers[1]->_kernel[idx][kr][kc] << " ";
+					}
+					cout << endl;
+				}
+			}
+		}
 	}
+	*/
+	for ( int _lc = 1; _lc < _layers.size(); _lc ++) {
+		
+		//cout << "layer : " << _lc << endl;
+		
+		_layers[_lc]->_forward(_layers[_lc - 1]);
+		
+		/*
+		for ( int k = 0; k < _layers[_lc]->_o_fmap_cnt; k ++) {
+			//cout << "FeatureMap " << k + 1 << endl;
+			for ( int i = 0; i < _layers[_lc]->_o_fmap_r; i ++) {
+				for ( int j = 0; j < _layers[_lc]->_o_fmap_c; j ++) {
+					cout << _layers[_lc]->_o_fmap[k]._data[i][j] << "\t";
+				}
+				cout << endl;
+			}
+		}
+		*/
+		
+	}
+	
+	
+
 	Layer *o_layer = _layers[_layers.size() -1];
 	double ret = 0.0;
 	for ( int _oc = 0; _oc < o_layer->_o_neuo_cnt; _oc ++) {
@@ -119,12 +164,12 @@ void ConvNeuralNetwork::_load_train_data() {
     ifstream lab_ifs(labelFileName, ios_base::binary);  
 	ifstream ifs(fileName, ios_base::binary);  
 	
-	if(lab_ifs.fail()) 	{
+	if( lab_ifs.fail() ) 	{
 		cerr << "[ERROR] error when open the label train file!" << endl;
 		exit (0);
 	}
 	
-	if(ifs.fail()) {
+	if (ifs.fail()) {
 		cerr << "[ERROR] error when open the train file!" << endl;
 		exit (0);
 	}
@@ -150,9 +195,8 @@ void ConvNeuralNetwork::_load_train_data() {
 	lab_ifs.read(magicNum, sizeof(magicNum));
 	lab_ifs.read(ccount, sizeof(magicNum));
 
-	_train_sample_cnt = 400;
 	int idx = 0;
-
+	
 	while(! ifs.eof() && idx < _train_sample_cnt)
 	{
 		int pt = 0;
@@ -171,13 +215,14 @@ void ConvNeuralNetwork::_load_train_data() {
 		char num[4] = {'0'};
 		lab_ifs.read(num, 1);
 		int out;
+		
 		memcpy(&out, num, sizeof(out));
 		memset(_y[idx], 0, sizeof(_y[idx]));
 		_y[idx][out] = 1;
 		idx += 1;
 	}
 	
-	cout << "[LOG] data is loaded completed! "<<endl;
+	cerr << "[LOG] Train data is loaded completed! "<<endl;
 }
 
 void ConvNeuralNetwork::_load_test_data() {
@@ -217,7 +262,6 @@ void ConvNeuralNetwork::_load_test_data() {
 	lab_ifs.read(magicNum, sizeof(magicNum));
 	lab_ifs.read(ccount, sizeof(magicNum));
 
-	_test_sample_cnt = 400;
 	int idx = 0;
 
 	while(! ifs.eof() && idx < _test_sample_cnt)
@@ -245,7 +289,7 @@ void ConvNeuralNetwork::_load_test_data() {
 		idx += 1;
 	}
 	
-	cout << "[LOG] data is loaded completed! "<<endl;
+	cerr << "[LOG] Test data is loaded completed! "<<endl;
 }
 
 
@@ -287,12 +331,14 @@ void ConvNeuralNetwork::_init_net() {
 	_add_layer(pool_layer_5);
 	
 	Layer *full_input_layer_6 = new FullInputLayer();
+	
 	_add_layer(full_input_layer_6);
 	
 	Layer *output_layer_7 = new OutputLayer(128, 10);
 
 	_add_layer(output_layer_7);
 	
+	cerr << "[LOG] Init net completed!" << endl;	
 }
 
 void ConvNeuralNetwork::_test() {
@@ -301,18 +347,25 @@ void ConvNeuralNetwork::_test() {
 		double *ry = _calculate(_t_x[i]);
 		int flag = 0;
 		for ( int j = 0; j < 10; j ++) {
+			cout << ry[j] << ",";
 			if ( ry[j] > 0.5 && _t_y[i][j] == 0 || 
 					ry[j] < 0.5 && _t_y[i][j] == 1 ) {
 				flag = 1;
-				break;
 			}
+			cout << _t_y[i][j] << " ";
+		}
+		cout << endl;
+		
+		if ( ry != NULL ) {
+			delete [] ry;
+			ry = NULL;
 		}
 		if (! flag ) {
 			right_cnt += 1;
 		}
 		tot_cnt += 1;
 	}
-	cout << "[LOG] right cnt : " << right_cnt << " " << "total cnt: " << tot_cnt << endl;
+	cerr << "[LOG] right cnt : " << right_cnt << " " << "total cnt: " << tot_cnt << endl;
 	
 }
 

@@ -60,14 +60,27 @@ double DE::_de(int lock) {
 
 	srand( (unsigned)time( NULL ) );
 	// init population
+	cerr << "[Log] Begin Init Population!" << endl;
 	_init_population();
+	/*	
+	for ( int i = 0; i < _dim; i ++) {
+		cout << _cur_pop->_inds[0]._x[i] << " " ;
+	}
+	cout << endl;
+	*/
+
+	
+	cerr << "[LOG] Init Population completed!" << endl;
 	// update global optimial values
 	_update_global_opt();
+
 	
-	
-	
+	cerr << "[LOG] Begin Training with DE!" << endl;
 			
 	_fe = 0;
+	
+	// FUNC_BPNN* func_cnn = (FUNC_BPNN*) _func;
+	FUNC_CNN* func_cnn = (FUNC_CNN*) _func;
 	
 	while (_fe < MAX_FE) {
 		
@@ -86,10 +99,16 @@ double DE::_de(int lock) {
 		
 		_fe += _np;
 		if ( ! lock ) {
-			cout << _global_opt_val << endl;
+			cout << _fe << " " << _global_opt_val << endl;
+		}
+		if ( _fe % 3000 == 0 ) {
+			cout << "[ TEST ] " ;
+			func_cnn->_test(_cur_pop->_inds[_global_opt_idx]._x);
 		}
 	}
-		
 	_update_global_opt();
+	
+
 	return _global_opt_val ;
+
 }

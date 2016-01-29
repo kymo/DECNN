@@ -7,6 +7,10 @@
 #include <iostream>
 #include <math.h>
 #include <time.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "func.h"
 
 using namespace std;

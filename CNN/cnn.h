@@ -4,12 +4,14 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
-
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "layer.h"
 
 using namespace std;
 
-#define D 28
+#define D 28 * 28
 #define ON 10
 
 class ConvNeuralNetwork {

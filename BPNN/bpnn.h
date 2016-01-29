@@ -1,3 +1,4 @@
+/*FileName: bpnn.h */
 #ifndef BPNN_H_
 #define BPNN_H_
 
@@ -41,6 +42,7 @@ public:
 
 	double		*_h_v;
 	double		*_o_v;
+	
 	BPNN() {}
 	BPNN( int i_neuo_cnt, 
 			int h_neuo_cnt,
@@ -86,7 +88,7 @@ public:
 	void _get_from_dev(const double*x) ;		
 
 	double* _calculate(double *v);
-	double _calc_val_sig(double *v, int *y);
+	double _cost_val_sig(double *v, int *y);
 
 	void _load_train_data();
 	
